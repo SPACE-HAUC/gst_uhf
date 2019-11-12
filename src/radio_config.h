@@ -1,4 +1,4 @@
-
+// Needs update for SPACEHAUC frequencies and packet structure
 #ifndef RADIO_CONFIG_H_
 #define RADIO_CONFIG_H_
 

@@ -68,4 +68,6 @@ desktop.ini
 *.xdv
 # Google Drive Maintenance (?) #
 Icon*
+# VScode Files
+**/.vscode/
 ################################
