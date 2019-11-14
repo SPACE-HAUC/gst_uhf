@@ -6,12 +6,17 @@
  * Web: http://blog.zakkemble.co.uk/si4463-radio-library-avr-arduino/
  */
 
-#define ARDUINO
-
 #ifdef ARDUINO
 #include <Arduino.h>
 #include <SPI.h>
-#endif //ARDUINO
+#else
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include <avr/pgmspace.h>
+#include <util/atomic.h>
+#include <util/delay.h>
+#include "Si446x_spi.h"
+#endif
 
 #include <string.h>
 #include <stdint.h>
@@ -48,6 +53,11 @@
 #define spiDeselect()			(digitalWrite(SI446X_CSN, HIGH))
 #define spi_transfer_nr(data)	(SPI.transfer(data))
 #define spi_transfer(data)		(SPI.transfer(data))
+#else
+#define	delay_ms(ms)			_delay_ms(ms)
+#define delay_us(us)			_delay_us(us)
+#define spiSelect()				(CSN_PORT &= ~_BV(CSN_BIT))
+#define spiDeselect()			(CSN_PORT |= _BV(CSN_BIT))
 #endif
 
 static const uint8_t config[] PROGMEM = RADIO_CONFIGURATION_DATA_ARRAY;
@@ -713,6 +723,7 @@ void Si446x_read(void* buff, uint8_t len)
 				((uint8_t*)buff)[i] = spi_transfer(0xFF);
 		}
 	}
+	setState(SI446X_STATE_RX);
 }
 /*
 // TODO maybe
