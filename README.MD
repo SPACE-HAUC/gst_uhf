@@ -15,3 +15,8 @@ TODO:
 1. Test RX from Endurosat. (Done)
 1. ~Confirm (and implement if necessary) AES-256 encryption and decryption protocols.~
 1. Implement shell mode if possible.
+
+Info:
+1. `sudo modprobe nf_conntrack_pptp`
+
+2. `sudo pppd -detach -crtscts noauth lock proxyarp/defaultroute <local>:<remote> /dev/tty* <baud>`
