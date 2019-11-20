@@ -65,22 +65,22 @@ void SI446X_CB_RXCOMPLETE(uint8_t length, int16_t rssi) //Receive interrupt func
   if(length > MAX_PACKET_SIZE)
     length = MAX_PACKET_SIZE;
   char buf[MAX_PACKET_SIZE] ;
-  Serial1.print("RSSI: "); Serial1.println(rssi);
+  Serial.print("RSSI: "); Serial.println(rssi);
   Si446x_read((uint8_t*)buf, length);
   if ( RECV_STAT ){ // if we are printing the enable message, we want to put it on the debug serial instead of the data serial
     RECV_STAT-- ; // this is not in the if statement to avoid buffer underflow
     if ( buf[length-1] != '\r' ) // no need to print the carriage return
-      Serial1.print(buf); // this is affordable because PIPE mode is rarely enabled
+      Serial.print(buf); // this is affordable because PIPE mode is rarely enabled
     return ;
   }
-  Serial.print(buf);  
+  Serial1.print(buf);  
   return ;
 }
 
 void EN_PIPE(void) // ISR to enable PIPE mode
 {
   char cmd [] = "ES+W22003320\r" ; //turn on tunnel mode
-  Serial1.println("Sending PIPE command...") ;
+  Serial.println("Sending PIPE command...") ;
   Si446x_TX(cmd, strlen(cmd), 0, SI446X_STATE_RX); // transmit the tunnel mode packet and fall back to RX mode
   RECV_STAT = 8 ; // going to receive 8 bytes (OK+3323\r) that need to be put out of the debug port instead of the data port
   return ;
@@ -89,19 +89,19 @@ void EN_PIPE(void) // ISR to enable PIPE mode
 void setup ()
 {
     attachInterrupt(digitalPinToInterrupt(PIPE_INTERRUPT), EN_PIPE, RISING) ; // Attach the EN_PIPE handler to PIPE_INTERRUPT on the RISING edge
-    Serial.begin(9600); // Data transmission, at 9.6 kbaud to relate to the 9.6 kbaud radio rate
-    Serial1.begin(9600); // Debug transmission
-    Serial1.println("Init: Serial -- Done");
+    Serial1.begin(115200); // Data transmission, at 9.6 kbaud to relate to the 9.6 kbaud radio rate
+    Serial.begin(115200); // Debug transmission
+    Serial.println("Init: Serial -- Done");
     Si446x_init() ;
-    Serial1.println("Init: Radio -- Done");
+    Serial.println("Init: Radio -- Done");
     delay(1000); // wait after initializing radio
-    Serial1.print("State: 0x") ;
-    Serial1.println((uint8_t)Si446x_getState(),HEX); // get radio state
+    Serial.print("State: 0x") ;
+    Serial.println((uint8_t)Si446x_getState(),HEX); // get radio state
     delay(100); // wait
-    Serial1.print("RSSI: 0x");
-    Serial1.println((uint16_t)Si446x_getRSSI(),HEX); // last RSSI
+    Serial.print("RSSI: 0x");
+    Serial.println((uint16_t)Si446x_getRSSI(),HEX); // last RSSI
     Si446x_setupCallback(SI446X_CBS_RXBEGIN, 1); // enable receive interrupt
-    EN_PIPE() ; // Enable PIPE in setup without an actual interrupt, FOR DEBUG ONLY
+//    EN_PIPE() ; // Enable PIPE in setup without an actual interrupt, FOR DEBUG ONLY
 //    Serial1.print("TX Status: 0x");Serial1.println(status,HEX);
     delay(100);
 }
@@ -113,8 +113,9 @@ void setup ()
 
 void loop ()
 {
-  while ( Serial.available() <= 0 ) ; // wait till we have data on the transmission line
+  while ( Serial1.available() <= 0 ) ; // wait till we have data on the transmission line
   char msg = Serial.read() ; // read byte
+  Serial.write(msg); //write to debug console
   Si446x_TX(&msg, sizeof(msg), 0, SI446X_STATE_RX); // transmit byte
   // delay ( 100 ) ; //Is a delay necessary?
 }
