@@ -128,9 +128,10 @@ void setup ()
 
 void loop ()
 {
-  while ( Serial.available() <= 0 ) ; // wait till we have data on the transmission line
-  String msg = Serial.readString() ; // read string, avoids any byte loss due to overflow
-//  Serial.print(msg); //write to debug console
-  Si446x_TX((char *)msg.c_str(), strlen(msg.c_str()), 0, SI446X_STATE_RX); // transmit byte
+  while ( Serial.available() < 64 ) ; // wait till we have data on the transmission line
+  char txbuf[MAX_PACKET_SIZE];
+  for (int i = 0; i < MAX_PACKET_SIZE; i++)
+    txbuf[i] = Serial.read();
+  Si446x_TX(txbuf, MAX_PACKET_SIZE, 0, SI446X_STATE_RX); // transmit byte
   // delay ( 100 ) ; //Is a delay necessary?
 }
